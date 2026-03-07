@@ -1,38 +1,45 @@
 apiVersion: argoproj.io/v1alpha1
-kind: Workflow
+kind: CronWorkflow
 metadata:
-  generateName: tee-time-
+  name: tee-time-cron
   namespace: argo
 spec:
-  entrypoint: main
+  schedule: "*/20 * * * *"   # every 20 minutes
+  timezone: "America/New_York"
+  concurrencyPolicy: Forbid   # skip run if previous is still running
+  startingDeadlineSeconds: 0
 
-  # Reference the pre-existing PVC — persists across workflow runs
-  volumes:
-    - name: workdir
-      persistentVolumeClaim:
-        claimName: tee-time-data
+  workflowSpec:
+    entrypoint: main
 
-  templates:
+    volumes:
+      - name: workdir
+        persistentVolumeClaim:
+          claimName: tee-time-data
 
-    - name: main
-      dag:
-        tasks:
-          - name: fetch
-            template: fetch-tee-times
+    templates:
 
-    - name: fetch-tee-times
-      container:
-        image: tee-time-notifier:latest
-        imagePullPolicy: Never
-        command: ["node"]
-        args: ["dist/fetch/index.js"]
-        env:
-          - name: OUTPUT_DIR
-            value: /workdir
-          - name: COURSE_ID
-            value: "course-123"
-          - name: TARGET_DATE
-            value: "2026-03-15"
-        volumeMounts:
-          - name: workdir
-            mountPath: /workdir
+      - name: main
+        dag:
+          tasks:
+            - name: fetch
+              template: fetch-tee-times
+
+      - name: fetch-tee-times
+        container:
+          image: tee-time-notifier:latest
+          imagePullPolicy: Never
+          command: ["node"]
+          args: ["dist/fetch/index.js"]
+          env:
+            - name: OUTPUT_DIR
+              value: /workdir
+            - name: COURSE_ID
+              value: "16503"
+            - name: PLAYERS
+              value: "4"
+            - name: HOLES
+              value: "18"
+          volumeMounts:
+            - name: workdir
+              mountPath: /workdir
