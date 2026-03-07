@@ -82,18 +82,18 @@ describe("compareWeekend", () => {
     expect(result.newTimes).toHaveLength(0);
   });
 
-  test("throws when fewer than 2 files exist", () => {
+  test("returns null when only one file exists (first pull of week)", () => {
     setupFiles({
       "2026-03-07T08-00-00Z.json": [makeTeeTime(101, "2026-03-14T08:00:00")],
     });
 
-    expect(() => compareWeekend(WEEK_DIR)).toThrow("Need at least 2 pulls");
+    expect(compareWeekend(WEEK_DIR)).toBeNull();
   });
 
-  test("throws when no files exist", () => {
+  test("returns null when no files exist", () => {
     setupFiles({});
 
-    expect(() => compareWeekend(WEEK_DIR)).toThrow("Need at least 2 pulls");
+    expect(compareWeekend(WEEK_DIR)).toBeNull();
   });
 
   test("with many files, compares the first vs last (not adjacent)", () => {

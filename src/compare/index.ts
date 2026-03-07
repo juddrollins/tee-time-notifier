@@ -18,16 +18,14 @@ function readFetchResult(filePath: string): FetchResult {
   return JSON.parse(fs.readFileSync(filePath, "utf-8")) as FetchResult;
 }
 
-export function compareWeekend(weekDir: string): CompareResult {
+export function compareWeekend(weekDir: string): CompareResult | null {
   const files = fs
     .readdirSync(weekDir)
     .filter((f) => f.endsWith(".json") && f !== "comparison.json")
     .sort(); // ISO timestamp filenames sort chronologically
 
   if (files.length < 2) {
-    throw new Error(
-      `Need at least 2 pulls to compare, found ${files.length} in ${weekDir}`
-    );
+    return null;
   }
 
   const baselineFile = files[0];
@@ -56,6 +54,11 @@ function main() {
   console.log(`Comparing pulls in ${weekDir}`);
 
   const result = compareWeekend(weekDir);
+
+  if (result === null) {
+    console.log("First pull of the week — nothing to compare yet, skipping");
+    return;
+  }
 
   console.log(`Baseline: ${result.baselineFile}`);
   console.log(`Latest:   ${result.latestFile}`);
