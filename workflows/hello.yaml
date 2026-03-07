@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: tee-time-
+  namespace: argo
+spec:
+  entrypoint: main
+
+  # Reference the pre-existing PVC — persists across workflow runs
+  volumes:
+    - name: workdir
+      persistentVolumeClaim:
+        claimName: tee-time-data
+
+  templates:
+
+    - name: main
+      dag:
+        tasks:
+          - name: fetch
+            template: fetch-tee-times
+
+    - name: fetch-tee-times
+      container:
+        image: tee-time-notifier:latest
+        imagePullPolicy: Never
+        command: ["node"]
+        args: ["dist/fetch/index.js"]
+        env:
+          - name: OUTPUT_DIR
+            value: /workdir
+          - name: COURSE_ID
+            value: "course-123"
+          - name: TARGET_DATE
+            value: "2026-03-15"
+        volumeMounts:
+          - name: workdir
+            mountPath: /workdir
