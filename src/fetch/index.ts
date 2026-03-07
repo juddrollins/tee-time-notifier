@@ -35,7 +35,7 @@ interface FetchResult {
  * Exception: once Thursday flips to Friday (midnight), jump ahead
  * to the FOLLOWING weekend so we're always looking ~7+ days out.
  */
-function getTargetWeekend(): { saturday: string; sunday: string } {
+export function getTargetWeekend(): { saturday: string; sunday: string } {
   const now = new Date();
   const day = now.getDay(); // 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
 
@@ -95,8 +95,8 @@ async function main() {
   console.log(`Target weekend: ${saturday} (Sat) / ${sunday} (Sun)`);
 
   const [satTimes, sunTimes] = await Promise.all([
-    get(buildUrl(`${saturday}T08:00:00`, `${saturday}T11:00:00`)),
-    get(buildUrl(`${sunday}T08:00:00`, `${sunday}T11:00:00`)),
+    get(buildUrl(`${saturday}T08:00:00`, `${saturday}T11:30:00`)),
+    get(buildUrl(`${sunday}T08:00:00`, `${sunday}T11:30:00`)),
   ]);
 
   const result: FetchResult = {
@@ -117,7 +117,9 @@ async function main() {
   console.log(`Saved ${result.teeTimes.length} tee times → ${outPath}`);
 }
 
-main().catch((err) => {
-  console.error(err.message);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((err) => {
+    console.error(err.message);
+    process.exit(1);
+  });
+}

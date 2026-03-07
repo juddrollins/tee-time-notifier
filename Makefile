@@ -5,6 +5,9 @@ CRON_NAME     := tee-time-cron
 
 # ── Build ─────────────────────────────────────────────────────────────────────
 
+test:
+	npm test
+
 build:
 	npm run build
 	docker build -t $(IMAGE) .
@@ -61,4 +64,4 @@ browse:
 # Build, apply, and trigger in one shot
 run: build apply trigger
 
-.PHONY: build cluster cluster-down apply trigger suspend resume list logs watch ui browse run
+.PHONY: test build cluster cluster-down apply trigger suspend resume list logs watch ui browse run
