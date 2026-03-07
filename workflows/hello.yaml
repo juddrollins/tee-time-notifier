@@ -25,6 +25,10 @@ spec:
             - name: fetch
               template: fetch-tee-times
 
+            - name: compare
+              template: compare-tee-times
+              dependencies: [fetch]
+
       - name: fetch-tee-times
         container:
           image: tee-time-notifier:latest
@@ -40,6 +44,19 @@ spec:
               value: "4"
             - name: HOLES
               value: "18"
+          volumeMounts:
+            - name: workdir
+              mountPath: /workdir
+
+      - name: compare-tee-times
+        container:
+          image: tee-time-notifier:latest
+          imagePullPolicy: Never
+          command: ["node"]
+          args: ["dist/compare/index.js"]
+          env:
+            - name: OUTPUT_DIR
+              value: /workdir
           volumeMounts:
             - name: workdir
               mountPath: /workdir

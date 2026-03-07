@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import { getTargetWeekend } from "./index";
+import { getTargetWeekend } from "../lib/dates";
 
 beforeEach(() => {
   vi.useFakeTimers();
