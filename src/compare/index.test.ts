@@ -63,8 +63,9 @@ describe("compareWeekend", () => {
 
     const result = compareWeekend(WEEK_DIR);
 
-    expect(result.newTimes).toHaveLength(2);
-    expect(result.newTimes.map((t) => t.teeTimeId)).toEqual([103, 104]);
+    expect(result).not.toBeNull();
+    expect(result!.newTimes).toHaveLength(2);
+    expect(result!.newTimes.map((t) => t.teeTimeId)).toEqual([103, 104]);
   });
 
   test("returns empty array when no new tee times", () => {
@@ -79,7 +80,8 @@ describe("compareWeekend", () => {
 
     const result = compareWeekend(WEEK_DIR);
 
-    expect(result.newTimes).toHaveLength(0);
+    expect(result).not.toBeNull();
+    expect(result!.newTimes).toHaveLength(0);
   });
 
   test("returns null when only one file exists (first pull of week)", () => {
@@ -105,9 +107,10 @@ describe("compareWeekend", () => {
 
     const result = compareWeekend(WEEK_DIR);
 
-    expect(result.baselineFile).toBe("2026-03-07T08-00-00Z.json");
-    expect(result.latestFile).toBe("2026-03-07T08-40-00Z.json");
-    expect(result.newTimes.map((t) => t.teeTimeId)).toEqual([102, 103]);
+    expect(result).not.toBeNull();
+    expect(result!.baselineFile).toBe("2026-03-07T08-00-00Z.json");
+    expect(result!.latestFile).toBe("2026-03-07T08-40-00Z.json");
+    expect(result!.newTimes.map((t) => t.teeTimeId)).toEqual([102, 103]);
   });
 
   test("ignores comparison.json when finding files", () => {
@@ -132,9 +135,10 @@ describe("compareWeekend", () => {
 
     const result = compareWeekend(WEEK_DIR);
 
-    expect(result.saturday).toBe("2026-03-14");
-    expect(result.sunday).toBe("2026-03-15");
-    expect(result.baselineFile).toBe("2026-03-07T08-00-00Z.json");
-    expect(result.latestFile).toBe("2026-03-07T08-20-00Z.json");
+    expect(result).not.toBeNull();
+    expect(result!.saturday).toBe("2026-03-14");
+    expect(result!.sunday).toBe("2026-03-15");
+    expect(result!.baselineFile).toBe("2026-03-07T08-00-00Z.json");
+    expect(result!.latestFile).toBe("2026-03-07T08-20-00Z.json");
   });
 });

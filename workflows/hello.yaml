@@ -29,6 +29,10 @@ spec:
               template: compare-tee-times
               dependencies: [fetch]
 
+            - name: notify
+              template: notify-new-times
+              dependencies: [compare]
+
       - name: fetch-tee-times
         container:
           image: tee-time-notifier:latest
@@ -57,6 +61,34 @@ spec:
           env:
             - name: OUTPUT_DIR
               value: /workdir
+          volumeMounts:
+            - name: workdir
+              mountPath: /workdir
+
+      - name: notify-new-times
+        container:
+          image: tee-time-notifier:latest
+          imagePullPolicy: Never
+          command: ["node"]
+          args: ["dist/notify/index.js"]
+          env:
+            - name: OUTPUT_DIR
+              value: /workdir
+            - name: SMTP_USER
+              valueFrom:
+                secretKeyRef:
+                  name: tee-time-secrets
+                  key: SMTP_USER
+            - name: SMTP_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: tee-time-secrets
+                  key: SMTP_PASS
+            - name: NOTIFY_EMAILS
+              valueFrom:
+                secretKeyRef:
+                  name: tee-time-secrets
+                  key: NOTIFY_EMAILS
           volumeMounts:
             - name: workdir
               mountPath: /workdir

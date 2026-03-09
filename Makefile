@@ -22,6 +22,9 @@ cluster:
 	kubectl wait --for=condition=available deployment/workflow-controller -n $(NAMESPACE) --timeout=90s
 	kubectl apply -f k8s/pvc.yaml
 
+secrets:
+	kubectl apply -f k8s/secret.yaml
+
 cluster-down:
 	kind delete cluster --name $(CLUSTER_NAME)
 
@@ -64,4 +67,4 @@ browse:
 # Build, apply, and trigger in one shot
 run: build apply trigger
 
-.PHONY: test build cluster cluster-down apply trigger suspend resume list logs watch ui browse run
+.PHONY: test build cluster cluster-down secrets apply trigger suspend resume list logs watch ui browse run
