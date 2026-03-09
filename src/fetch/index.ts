@@ -51,11 +51,24 @@ async function main() {
     get(buildUrl(`${sunday}T08:00:00`, `${sunday}T11:30:00`)),
   ]);
 
+  // Sometimes API returns times outside the window, so we filter them out
+  const inWindow = (t: TeeTime) => {
+    const time = t.dateScheduled.split("T")[1]; // "HH:MM:SS"
+    return time >= "08:00:00" && time <= "11:30:00";
+  };
+
+  const allTimes = [...satTimes, ...sunTimes];
+  const filtered = allTimes.filter((t) => !inWindow(t));
+  if (filtered.length > 0) {
+    console.log(`Filtered out ${filtered.length} tee time(s) outside 08:00–11:30:`);
+    filtered.forEach((t) => console.log(`  - ${t.dateScheduled} (id: ${t.teeTimeId})`));
+  }
+
   const result: FetchResult = {
     fetchedAt,
     saturday,
     sunday,
-    teeTimes: [...satTimes, ...sunTimes],
+    teeTimes: allTimes.filter(inWindow),
   };
 
   // /workdir/week-2026-03-14/2026-03-07T10-30-00-000Z.json
