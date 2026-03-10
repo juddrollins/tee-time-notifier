@@ -227,7 +227,7 @@
       renderDay(sunLabel, sunTimes, newIds);
 
     document.getElementById("status").textContent =
-      `Last fetched ${timeAgo(latest.fetchedAt)} · refreshes every 20 min`;
+      `Last fetched ${timeAgo(latest.fetchedAt)} · refreshes every 10 min`;
   }
 
   async function refresh() {
@@ -242,7 +242,7 @@
   }
 
   refresh();
-  setInterval(refresh, 20 * 60 * 1000);
+  setInterval(refresh, 10 * 60 * 1000);
 </script>
 
 </body>
