@@ -241,6 +241,48 @@
     </div>`;
   }
 
+  function formatDateTime(isoStr) {
+    return new Date(isoStr).toLocaleString("en-US", {
+      month: "short", day: "numeric",
+      hour: "numeric", minute: "2-digit",
+      hour12: true, timeZone: "America/New_York",
+    });
+  }
+
+  function renderBookedThisWeek({ first, latest }) {
+    const latestIds = new Set(latest.teeTimes.map((t) => t.teeTimeId));
+    const booked = first.teeTimes.filter((t) => !latestIds.has(t.teeTimeId));
+
+    if (booked.length === 0) return "";
+
+    const firstSeen = formatDateTime(first.fetchedAt);
+    const bookedBy  = formatDateTime(latest.fetchedAt);
+
+    const rows = booked
+      .sort((a, b) => a.dateScheduled.localeCompare(b.dateScheduled))
+      .map((t) => {
+        const day = t.dateScheduled.startsWith(first.saturday) ? "Sat" : "Sun";
+        return `<tr>
+          <td>${day} ${formatTime(t.dateScheduled)}</td>
+          <td>${firstSeen}</td>
+          <td>${bookedBy}</td>
+          <td><span class="pill pill-booked">Booked</span></td>
+        </tr>`;
+      }).join("");
+
+    return `<div class="section-label">No Longer Available This Week</div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Tee Time</th><th>First Available</th><th>Booked By</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }
+
   function renderHistory(weekendData) {
     if (!weekendData) return "";
 
@@ -313,6 +355,7 @@
     document.getElementById("root").innerHTML =
       renderDay(satLabel, satTimes, newIds) +
       renderDay(sunLabel, sunTimes, newIds) +
+      renderBookedThisWeek(current) +
       renderHistory(previous);
 
     document.getElementById("status").textContent =
