@@ -1,12 +1,10 @@
-import * as fs from "fs";
-import * as path from "path";
 import * as https from "https";
 import { getTargetWeekend } from "../lib/dates";
+import * as github from "../lib/github";
 import type { TeeTime, FetchResult } from "../lib/types";
 
 export { getTargetWeekend };
 
-const WORKDIR = process.env.OUTPUT_DIR ?? "/workdir";
 const COURSE_ID = process.env.COURSE_ID ?? "16503";
 const PLAYERS = process.env.PLAYERS ?? "4";
 const HOLES = process.env.HOLES ?? "18";
@@ -71,15 +69,11 @@ async function main() {
     teeTimes: allTimes.filter(inWindow),
   };
 
-  // /workdir/week-2026-03-14/2026-03-07T10-30-00-000Z.json
-  const weekDir = path.join(WORKDIR, `weekend-${saturday}`);
-  fs.mkdirSync(weekDir, { recursive: true });
-
   const timestamp = fetchedAt.replace(/[:.]/g, "-");
-  const outPath = path.join(weekDir, `${timestamp}.json`);
-  fs.writeFileSync(outPath, JSON.stringify(result, null, 2));
+  const filePath = `data/weekend-${saturday}/${timestamp}.json`;
+  await github.writeFile(filePath, JSON.stringify(result, null, 2), `fetch: ${saturday} at ${fetchedAt}`);
 
-  console.log(`Saved ${result.teeTimes.length} tee times → ${outPath}`);
+  console.log(`Saved ${result.teeTimes.length} tee times → ${filePath}`);
 }
 
 if (require.main === module) {

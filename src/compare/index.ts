@@ -1,9 +1,6 @@
-import * as fs from "fs";
-import * as path from "path";
+import * as github from "../lib/github";
 import { getTargetWeekend } from "../lib/dates";
 import type { FetchResult, TeeTime } from "../lib/types";
-
-const WORKDIR = process.env.OUTPUT_DIR ?? "/workdir";
 
 export interface CompareResult {
   comparedAt: string;
@@ -14,29 +11,15 @@ export interface CompareResult {
   newTimes: TeeTime[];
 }
 
-function readFetchResult(filePath: string): FetchResult {
-  return JSON.parse(fs.readFileSync(filePath, "utf-8")) as FetchResult;
-}
-
-export function compareWeekend(weekDir: string): CompareResult | null {
-  const files = fs
-    .readdirSync(weekDir)
-    .filter((f) => f.endsWith(".json") && f !== "comparison.json")
-    .sort(); // ISO timestamp filenames sort chronologically
-
-  if (files.length < 2) {
-    return null;
-  }
-
-  const baselineFile = files[0];
-  const latestFile = files[files.length - 1];
-
-  const baseline = readFetchResult(path.join(weekDir, baselineFile));
-  const latest = readFetchResult(path.join(weekDir, latestFile));
-
+/** Pure comparison logic — no I/O. Returns null if fewer than 2 files (first pull of week). */
+export function compareResults(
+  baseline: FetchResult,
+  latest: FetchResult,
+  baselineFile: string,
+  latestFile: string
+): CompareResult {
   const baselineIds = new Set(baseline.teeTimes.map((t) => t.teeTimeId));
   const newTimes = latest.teeTimes.filter((t) => !baselineIds.has(t.teeTimeId));
-
   return {
     comparedAt: new Date().toISOString(),
     saturday: latest.saturday,
@@ -47,18 +30,32 @@ export function compareWeekend(weekDir: string): CompareResult | null {
   };
 }
 
-function main() {
+async function main() {
   const { saturday } = getTargetWeekend();
-  const weekDir = path.join(WORKDIR, `weekend-${saturday}`);
+  const weekDir = `data/weekend-${saturday}`;
 
   console.log(`Comparing pulls in ${weekDir}`);
 
-  const result = compareWeekend(weekDir);
+  const allFiles = await github.listDir(weekDir);
+  const files = allFiles.filter((f) => f !== "comparison.json").sort();
 
-  if (result === null) {
+  if (files.length < 2) {
     console.log("First pull of the week — nothing to compare yet, skipping");
     return;
   }
+
+  const baselineFile = files[0];
+  const latestFile = files[files.length - 1];
+
+  const [baselineRaw, latestRaw] = await Promise.all([
+    github.readFile(`${weekDir}/${baselineFile}`),
+    github.readFile(`${weekDir}/${latestFile}`),
+  ]);
+
+  const baseline: FetchResult = JSON.parse(baselineRaw!);
+  const latest: FetchResult = JSON.parse(latestRaw!);
+
+  const result = compareResults(baseline, latest, baselineFile, latestFile);
 
   console.log(`Baseline: ${result.baselineFile}`);
   console.log(`Latest:   ${result.latestFile}`);
@@ -70,17 +67,16 @@ function main() {
     });
   }
 
-  fs.writeFileSync(
-    path.join(weekDir, "comparison.json"),
-    JSON.stringify(result, null, 2)
+  await github.writeFile(
+    `${weekDir}/comparison.json`,
+    JSON.stringify(result, null, 2),
+    `compare: ${result.newTimes.length} new time(s) for ${saturday}`
   );
 }
 
 if (require.main === module) {
-  try {
-    main();
-  } catch (err: any) {
+  main().catch((err: any) => {
     console.error(err.message);
     process.exit(1);
-  }
+  });
 }

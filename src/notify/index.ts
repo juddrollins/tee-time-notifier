@@ -1,10 +1,7 @@
-import * as fs from "fs";
-import * as path from "path";
 import nodemailer from "nodemailer";
 import { getTargetWeekend } from "../lib/dates";
+import * as github from "../lib/github";
 import type { CompareResult } from "../compare/index";
-
-const WORKDIR = process.env.OUTPUT_DIR ?? "/workdir";
 const SMTP_USER = process.env.SMTP_USER ?? "";
 const SMTP_PASS = process.env.SMTP_PASS ?? "";
 const NOTIFY_EMAILS = process.env.NOTIFY_EMAILS ?? "";
@@ -82,17 +79,15 @@ function buildEmailBody(result: CompareResult): { subject: string; html: string 
 
 async function main() {
   const { saturday } = getTargetWeekend();
-  const weekDir = path.join(WORKDIR, `weekend-${saturday}`);
-  const comparisonPath = path.join(weekDir, "comparison.json");
+  const comparisonPath = `data/weekend-${saturday}/comparison.json`;
 
-  if (!fs.existsSync(comparisonPath)) {
+  const raw = await github.readFile(comparisonPath);
+  if (raw === null) {
     console.log("No comparison file yet — skipping notification");
     return;
   }
 
-  const result: CompareResult = JSON.parse(
-    fs.readFileSync(comparisonPath, "utf-8")
-  );
+  const result: CompareResult = JSON.parse(raw);
 
   if (result.newTimes.length === 0) {
     console.log("No new tee times — skipping notification");

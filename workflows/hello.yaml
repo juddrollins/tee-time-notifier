@@ -12,11 +12,6 @@ spec:
   workflowSpec:
     entrypoint: main
 
-    volumes:
-      - name: workdir
-        persistentVolumeClaim:
-          claimName: tee-time-data
-
     templates:
 
       - name: main
@@ -40,17 +35,27 @@ spec:
           command: ["node"]
           args: ["dist/fetch/index.js"]
           env:
-            - name: OUTPUT_DIR
-              value: /workdir
             - name: COURSE_ID
               value: "16503"
             - name: PLAYERS
               value: "4"
             - name: HOLES
               value: "18"
-          volumeMounts:
-            - name: workdir
-              mountPath: /workdir
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: tee-time-secrets
+                  key: GITHUB_TOKEN
+            - name: GITHUB_OWNER
+              valueFrom:
+                secretKeyRef:
+                  name: tee-time-secrets
+                  key: GITHUB_OWNER
+            - name: GITHUB_REPO
+              valueFrom:
+                secretKeyRef:
+                  name: tee-time-secrets
+                  key: GITHUB_REPO
 
       - name: compare-tee-times
         container:
@@ -59,11 +64,21 @@ spec:
           command: ["node"]
           args: ["dist/compare/index.js"]
           env:
-            - name: OUTPUT_DIR
-              value: /workdir
-          volumeMounts:
-            - name: workdir
-              mountPath: /workdir
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: tee-time-secrets
+                  key: GITHUB_TOKEN
+            - name: GITHUB_OWNER
+              valueFrom:
+                secretKeyRef:
+                  name: tee-time-secrets
+                  key: GITHUB_OWNER
+            - name: GITHUB_REPO
+              valueFrom:
+                secretKeyRef:
+                  name: tee-time-secrets
+                  key: GITHUB_REPO
 
       - name: notify-new-times
         container:
@@ -72,8 +87,21 @@ spec:
           command: ["node"]
           args: ["dist/notify/index.js"]
           env:
-            - name: OUTPUT_DIR
-              value: /workdir
+            - name: GITHUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: tee-time-secrets
+                  key: GITHUB_TOKEN
+            - name: GITHUB_OWNER
+              valueFrom:
+                secretKeyRef:
+                  name: tee-time-secrets
+                  key: GITHUB_OWNER
+            - name: GITHUB_REPO
+              valueFrom:
+                secretKeyRef:
+                  name: tee-time-secrets
+                  key: GITHUB_REPO
             - name: SMTP_USER
               valueFrom:
                 secretKeyRef:
@@ -89,6 +117,3 @@ spec:
                 secretKeyRef:
                   name: tee-time-secrets
                   key: NOTIFY_EMAILS
-          volumeMounts:
-            - name: workdir
-              mountPath: /workdir
