@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tee Time Notifier</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f3f4f6;
+      color: #111;
+      padding: 24px 16px;
+    }
+
+    header {
+      max-width: 720px;
+      margin: 0 auto 24px;
+    }
+
+    h1 { font-size: 1.4rem; font-weight: 700; }
+
+    .meta {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-top: 4px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 720px;
+      margin: 0 auto 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #374151;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    th {
+      text-align: left;
+      padding: 6px 10px;
+      background: #f9fafb;
+      color: #6b7280;
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr.new td { background: #f0fdf4; }
+
+    .badge {
+      display: inline-block;
+      background: #22c55e;
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 999px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    .empty {
+      color: #9ca3af;
+      font-size: 0.88rem;
+      padding: 8px 0;
+    }
+
+    .error {
+      color: #ef4444;
+      font-size: 0.88rem;
+    }
+
+    #status {
+      max-width: 720px;
+      margin: 0 auto;
+      font-size: 0.8rem;
+      color: #9ca3af;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Falls Road Golf Course</h1>
+  <div class="meta" id="subtitle">Loading...</div>
+</header>
+
+<div id="root"></div>
+<div id="status"></div>
+
+<script>
+  const GITHUB_OWNER = "YOUR_OWNER";
+  const GITHUB_REPO  = "YOUR_REPO";
+  const DATA_BRANCH  = "data";
+
+  const raw = (path) =>
+    `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${DATA_BRANCH}/${path}`;
+
+  const api = (path) =>
+    `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${path}?ref=${DATA_BRANCH}`;
+
+  async function fetchJSON(url) {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status} — ${url}`);
+    return res.json();
+  }
+
+  async function loadData() {
+    // List the data/ directory to find weekend folders
+    const entries = await fetchJSON(api("data"));
+    const weekendDirs = entries
+      .filter((e) => e.type === "dir" && e.name.startsWith("weekend-"))
+      .map((e) => e.name)
+      .sort()
+      .reverse();
+
+    if (weekendDirs.length === 0) throw new Error("No weekend data found yet.");
+
+    const weekendDir = weekendDirs[0]; // most recent
+
+    // List files in that weekend folder
+    const files = await fetchJSON(api(`data/${weekendDir}`));
+    const fileNames = files.map((f) => f.name);
+
+    // Latest fetch result (all current times)
+    const fetchFiles = fileNames.filter((f) => f !== "comparison.json").sort();
+    if (fetchFiles.length === 0) throw new Error("No fetch files found.");
+    const latestFileName = fetchFiles[fetchFiles.length - 1];
+    const latest = await fetchJSON(raw(`data/${weekendDir}/${latestFileName}`));
+
+    // Comparison result (new times) — may not exist on first pull
+    let comparison = null;
+    if (fileNames.includes("comparison.json")) {
+      comparison = await fetchJSON(raw(`data/${weekendDir}/comparison.json`));
+    }
+
+    return { latest, comparison, weekendDir };
+  }
+
+  function formatDate(dateStr) {
+    return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", {
+      weekday: "long", month: "long", day: "numeric",
+    });
+  }
+
+  function formatTime(dateScheduled) {
+    return new Date(dateScheduled).toLocaleTimeString("en-US", {
+      hour: "numeric", minute: "2-digit", hour12: true,
+      timeZone: "America/New_York",
+    });
+  }
+
+  function timeAgo(isoStr) {
+    const diff = Math.floor((Date.now() - new Date(isoStr)) / 1000);
+    if (diff < 60) return `${diff}s ago`;
+    if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+    return `${Math.floor(diff / 3600)}h ago`;
+  }
+
+  function renderDay(label, times, newIds) {
+    if (times.length === 0) {
+      return `<div class="card"><h2>${label}</h2><div class="empty">No tee times available.</div></div>`;
+    }
+
+    const rows = times.map((t) => {
+      const isNew = newIds.has(t.teeTimeId);
+      return `<tr class="${isNew ? "new" : ""}">
+        <td>${formatTime(t.dateScheduled)}${isNew ? '<span class="badge">NEW</span>' : ""}</td>
+        <td>${t.teeFeeTitle}</td>
+        <td>${t.maxPlayers} players</td>
+        <td>$${t.priceBeforeTax}</td>
+      </tr>`;
+    }).join("");
+
+    return `<div class="card">
+      <h2>${label}</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Time</th><th>Rate</th><th>Players</th><th>Price</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }
+
+  function render({ latest, comparison }) {
+    const newIds = new Set((comparison?.newTimes ?? []).map((t) => t.teeTimeId));
+
+    const satTimes = latest.teeTimes.filter((t) => t.dateScheduled.startsWith(latest.saturday));
+    const sunTimes = latest.teeTimes.filter((t) => t.dateScheduled.startsWith(latest.sunday));
+
+    const satLabel = formatDate(latest.saturday);
+    const sunLabel = formatDate(latest.sunday);
+
+    document.getElementById("subtitle").textContent =
+      `Weekend of ${satLabel} · ${latest.teeTimes.length} time(s) available` +
+      (comparison ? ` · ${comparison.newTimes.length} new` : "");
+
+    document.getElementById("root").innerHTML =
+      renderDay(satLabel, satTimes, newIds) +
+      renderDay(sunLabel, sunTimes, newIds);
+
+    document.getElementById("status").textContent =
+      `Last fetched ${timeAgo(latest.fetchedAt)} · refreshes every 20 min`;
+  }
+
+  async function refresh() {
+    try {
+      const data = await loadData();
+      render(data);
+    } catch (err) {
+      document.getElementById("root").innerHTML =
+        `<div class="card"><div class="error">${err.message}</div></div>`;
+      console.error(err);
+    }
+  }
+
+  refresh();
+  setInterval(refresh, 20 * 60 * 1000);
+</script>
+
+</body>
+</html>
