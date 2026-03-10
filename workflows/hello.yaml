@@ -4,7 +4,7 @@ metadata:
   name: tee-time-cron
   namespace: argo
 spec:
-  schedule: "*/20 * * * *"   # every 20 minutes
+  schedule: "*/10 * * * *"   # every 20 minutes
   timezone: "America/New_York"
   concurrencyPolicy: Forbid   # skip run if previous is still running
   startingDeadlineSeconds: 0
