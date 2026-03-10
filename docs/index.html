@@ -93,6 +93,36 @@
       font-size: 0.88rem;
     }
 
+    .section-label {
+      max-width: 720px;
+      margin: 32px auto 12px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #9ca3af;
+    }
+
+    .pill {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 999px;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
+
+    .pill-booked {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .pill-available {
+      background: #f0fdf4;
+      color: #15803d;
+    }
+
     #status {
       max-width: 720px;
       margin: 0 auto;
@@ -129,6 +159,23 @@
     return res.json();
   }
 
+  async function loadWeekend(weekendDir) {
+    const files = await fetchJSON(api(`data/${weekendDir}`));
+    const fileNames = files.map((f) => f.name);
+    const fetchFiles = fileNames.filter((f) => f !== "comparison.json").sort();
+    if (fetchFiles.length === 0) return null;
+
+    const latest = await fetchJSON(raw(`data/${weekendDir}/${fetchFiles[fetchFiles.length - 1]}`));
+    const first  = await fetchJSON(raw(`data/${weekendDir}/${fetchFiles[0]}`));
+
+    let comparison = null;
+    if (fileNames.includes("comparison.json")) {
+      comparison = await fetchJSON(raw(`data/${weekendDir}/comparison.json`));
+    }
+
+    return { latest, first, comparison, weekendDir };
+  }
+
   async function loadData() {
     // List the data/ directory to find weekend folders
     const entries = await fetchJSON(api("data"));
@@ -140,25 +187,10 @@
 
     if (weekendDirs.length === 0) throw new Error("No weekend data found yet.");
 
-    const weekendDir = weekendDirs[0]; // most recent
+    const current  = await loadWeekend(weekendDirs[0]);
+    const previous = weekendDirs.length > 1 ? await loadWeekend(weekendDirs[1]) : null;
 
-    // List files in that weekend folder
-    const files = await fetchJSON(api(`data/${weekendDir}`));
-    const fileNames = files.map((f) => f.name);
-
-    // Latest fetch result (all current times)
-    const fetchFiles = fileNames.filter((f) => f !== "comparison.json").sort();
-    if (fetchFiles.length === 0) throw new Error("No fetch files found.");
-    const latestFileName = fetchFiles[fetchFiles.length - 1];
-    const latest = await fetchJSON(raw(`data/${weekendDir}/${latestFileName}`));
-
-    // Comparison result (new times) — may not exist on first pull
-    let comparison = null;
-    if (fileNames.includes("comparison.json")) {
-      comparison = await fetchJSON(raw(`data/${weekendDir}/comparison.json`));
-    }
-
-    return { latest, comparison, weekendDir };
+    return { current, previous };
   }
 
   function formatDate(dateStr) {
@@ -209,7 +241,63 @@
     </div>`;
   }
 
-  function render({ latest, comparison }) {
+  function renderHistory(weekendData) {
+    if (!weekendData) return "";
+
+    const { first, latest, comparison } = weekendData;
+    const satLabel = formatDate(first.saturday);
+    const sunLabel = formatDate(first.sunday);
+
+    // All times ever seen = first fetch + any new times that appeared later
+    const newTimes = comparison?.newTimes ?? [];
+    const newIds = new Set(newTimes.map((t) => t.teeTimeId));
+    const latestIds = new Set(latest.teeTimes.map((t) => t.teeTimeId));
+
+    const allSeen = [
+      ...first.teeTimes,
+      ...newTimes.filter((t) => !first.teeTimes.some((f) => f.teeTimeId === t.teeTimeId)),
+    ];
+
+    if (allSeen.length === 0) {
+      return `<div class="card"><h2>Weekend of ${satLabel}</h2><div class="empty">No tee times were ever available this weekend.</div></div>`;
+    }
+
+    const rows = allSeen
+      .sort((a, b) => a.dateScheduled.localeCompare(b.dateScheduled))
+      .map((t) => {
+        const booked = !latestIds.has(t.teeTimeId);
+        const appearedLate = newIds.has(t.teeTimeId);
+        const day = t.dateScheduled.startsWith(first.saturday) ? "Sat" : "Sun";
+        const firstSeen = appearedLate
+          ? `~${new Date(comparison.comparedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}`
+          : new Date(first.fetchedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+        const statusHtml = booked
+          ? `<span class="pill pill-booked">Booked</span>`
+          : `<span class="pill pill-available">Available</span>`;
+
+        return `<tr>
+          <td>${day} ${formatTime(t.dateScheduled)}</td>
+          <td>$${t.priceBeforeTax}</td>
+          <td>${firstSeen}</td>
+          <td>${statusHtml}</td>
+        </tr>`;
+      }).join("");
+
+    return `<div class="section-label">Last Weekend — ${satLabel} &amp; ${sunLabel}</div>
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Tee Time</th><th>Price</th><th>First Available</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }
+
+  function render({ current, previous }) {
+    const { latest, comparison } = current;
     const newIds = new Set((comparison?.newTimes ?? []).map((t) => t.teeTimeId));
 
     const satTimes = latest.teeTimes.filter((t) => t.dateScheduled.startsWith(latest.saturday));
@@ -224,7 +312,8 @@
 
     document.getElementById("root").innerHTML =
       renderDay(satLabel, satTimes, newIds) +
-      renderDay(sunLabel, sunTimes, newIds);
+      renderDay(sunLabel, sunTimes, newIds) +
+      renderHistory(previous);
 
     document.getElementById("status").textContent =
       `Last fetched ${timeAgo(latest.fetchedAt)} · refreshes every 10 min`;
@@ -232,8 +321,9 @@
 
   async function refresh() {
     try {
-      const data = await loadData();
-      render(data);
+      const { current, previous } = await loadData();
+      if (!current) throw new Error("No data available yet.");
+      render({ current, previous });
     } catch (err) {
       document.getElementById("root").innerHTML =
         `<div class="card"><div class="error">${err.message}</div></div>`;
