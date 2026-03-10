@@ -137,6 +137,7 @@
 <header>
   <h1>Falls Road Golf Course</h1>
   <div class="meta" id="subtitle">Loading...</div>
+  <div class="meta">Tracking tee times 8:00 AM – 11:30 AM</div>
 </header>
 
 <div id="root"></div>
@@ -253,8 +254,6 @@
     const latestIds = new Set(latest.teeTimes.map((t) => t.teeTimeId));
     const booked = first.teeTimes.filter((t) => !latestIds.has(t.teeTimeId));
 
-    if (booked.length === 0) return "";
-
     const firstSeen = formatDateTime(first.fetchedAt);
     const bookedBy  = formatDateTime(latest.fetchedAt);
 
@@ -270,17 +269,19 @@
         </tr>`;
       }).join("");
 
+    const body = booked.length === 0
+      ? `<div class="empty">No tee times have been booked since we started tracking this week.</div>`
+      : `<table>
+          <thead>
+            <tr>
+              <th>Tee Time</th><th>First Available</th><th>Booked By</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+
     return `<div class="section-label">No Longer Available This Week</div>
-    <div class="card">
-      <table>
-        <thead>
-          <tr>
-            <th>Tee Time</th><th>First Available</th><th>Booked By</th><th>Status</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
-    </div>`;
+    <div class="card">${body}</div>`;
   }
 
   function renderHistory(weekendData) {
