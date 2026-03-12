@@ -31,12 +31,14 @@ describe("getTargetWeekend", () => {
     });
   });
 
-  describe("Thu / Fri / Sat → following weekend (+7 to +9 days)", () => {
-    test("Thursday (+9 days)", () => {
+  describe("Thu → upcoming weekend (not yet switched)", () => {
+    test("Thursday", () => {
       vi.setSystemTime(new Date("2026-03-12T12:00:00"));
-      expect(getTargetWeekend()).toEqual({ saturday: "2026-03-21", sunday: "2026-03-22" });
+      expect(getTargetWeekend()).toEqual({ saturday: "2026-03-14", sunday: "2026-03-15" });
     });
+  });
 
+  describe("Fri / Sat → following weekend (+7 to +8 days)", () => {
     test("Friday (+8 days)", () => {
       vi.setSystemTime(new Date("2026-03-13T12:00:00"));
       expect(getTargetWeekend()).toEqual({ saturday: "2026-03-21", sunday: "2026-03-22" });

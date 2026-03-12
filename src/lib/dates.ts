@@ -1,11 +1,11 @@
 /**
  * Returns the target Saturday and Sunday to check.
  *
- * Mon/Tue/Wed: upcoming Sat/Sun (+3 to +5 days)
- * Thu/Fri/Sat: following Sat/Sun (+7 to +9 days)
- * Sun:         upcoming Sat/Sun (+6 days)
+ * Sun/Mon/Tue/Wed/Thu: upcoming Sat/Sun
+ * Fri/Sat:             following Sat/Sun
  *
- * This keeps the target always 3–9 days out, cycling Thursday to Thursday.
+ * Switches to the following weekend at midnight Friday,
+ * giving the full week Mon–Thu to track the upcoming weekend.
  */
 export function getTargetWeekend(): { saturday: string; sunday: string } {
   const now = new Date();
@@ -17,7 +17,7 @@ export function getTargetWeekend(): { saturday: string; sunday: string } {
   saturday.setDate(now.getDate() + daysUntilSat);
   saturday.setHours(0, 0, 0, 0);
 
-  if (day === 4 || day === 5 || day === 6) {
+  if (day === 5 || day === 6) {
     saturday.setDate(saturday.getDate() + 7);
   }
 
