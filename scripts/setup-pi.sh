@@ -4,7 +4,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(dirname "$SCRIPT_DIR")"
 RUN_SCRIPT="$REPO_DIR/run.sh"
-CRON_JOB="*/20 * * * * $RUN_SCRIPT >> $REPO_DIR/cron.log 2>&1"
+CRON_JOB="*/10 * * * * $RUN_SCRIPT >> $REPO_DIR/cron.log 2>&1"
 
 echo "==> Setting up tee-time-notifier on this machine"
 
@@ -48,7 +48,7 @@ else
 fi
 
 echo ""
-echo "✅ Setup complete. Runs every 20 minutes."
+echo "✅ Setup complete. Runs every 10 minutes."
 echo "   Logs: $REPO_DIR/cron.log"
 echo ""
 echo "   To test manually: $RUN_SCRIPT"
