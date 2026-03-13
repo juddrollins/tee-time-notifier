@@ -8,10 +8,13 @@ export interface CompareResult {
   sunday: string;
   baselineFile: string;
   latestFile: string;
+  baselineFetchedAt: string;
+  latestFetchedAt: string;
   newTimes: TeeTime[];
+  disappearedTimes: TeeTime[];
 }
 
-/** Pure comparison logic — no I/O. Returns null if fewer than 2 files (first pull of week). */
+/** Pure comparison logic — no I/O. */
 export function compareResults(
   baseline: FetchResult,
   latest: FetchResult,
@@ -19,14 +22,19 @@ export function compareResults(
   latestFile: string
 ): CompareResult {
   const baselineIds = new Set(baseline.teeTimes.map((t) => t.teeTimeId));
+  const latestIds = new Set(latest.teeTimes.map((t) => t.teeTimeId));
   const newTimes = latest.teeTimes.filter((t) => !baselineIds.has(t.teeTimeId));
+  const disappearedTimes = baseline.teeTimes.filter((t) => !latestIds.has(t.teeTimeId));
   return {
     comparedAt: new Date().toISOString(),
     saturday: latest.saturday,
     sunday: latest.sunday,
     baselineFile,
     latestFile,
+    baselineFetchedAt: baseline.fetchedAt,
+    latestFetchedAt: latest.fetchedAt,
     newTimes,
+    disappearedTimes,
   };
 }
 
@@ -60,17 +68,19 @@ async function main() {
   console.log(`Baseline: ${result.baselineFile}`);
   console.log(`Latest:   ${result.latestFile}`);
   console.log(`New tee times found: ${result.newTimes.length}`);
+  result.newTimes.forEach((t) => {
+    console.log(`  + ${t.dateScheduled} — ${t.teeFeeTitle} $${t.priceBeforeTax}`);
+  });
 
-  if (result.newTimes.length > 0) {
-    result.newTimes.forEach((t) => {
-      console.log(`  + ${t.dateScheduled} — ${t.teeFeeTitle} $${t.priceBeforeTax}`);
-    });
-  }
+  console.log(`Disappeared tee times: ${result.disappearedTimes.length}`);
+  result.disappearedTimes.forEach((t) => {
+    console.log(`  - ${t.dateScheduled} — ${t.teeFeeTitle} $${t.priceBeforeTax}`);
+  });
 
   await github.writeFile(
     `${weekDir}/comparison.json`,
     JSON.stringify(result, null, 2),
-    `compare: ${result.newTimes.length} new time(s) for ${saturday}`
+    `compare: +${result.newTimes.length} new, -${result.disappearedTimes.length} disappeared for ${saturday}`
   );
 }
 
