@@ -11,6 +11,7 @@ function formatDate(dateStr: string): string {
     weekday: "long",
     month: "long",
     day: "numeric",
+    timeZone: "America/New_York",
   });
 }
 
