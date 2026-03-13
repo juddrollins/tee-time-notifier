@@ -250,17 +250,15 @@
     });
   }
 
-  function renderBookedThisWeek({ first, latest }) {
-    const latestIds = new Set(latest.teeTimes.map((t) => t.teeTimeId));
-    const booked = first.teeTimes.filter((t) => !latestIds.has(t.teeTimeId));
-
-    const firstSeen = formatDateTime(first.fetchedAt);
-    const bookedBy  = formatDateTime(latest.fetchedAt);
+  function renderBookedThisWeek({ comparison, latest }) {
+    const booked = comparison?.disappearedTimes ?? [];
+    const firstSeen = comparison?.baselineFetchedAt ? formatDateTime(comparison.baselineFetchedAt) : "—";
+    const bookedBy  = comparison?.latestFetchedAt  ? formatDateTime(comparison.latestFetchedAt)  : "—";
 
     const rows = booked
       .sort((a, b) => a.dateScheduled.localeCompare(b.dateScheduled))
       .map((t) => {
-        const day = t.dateScheduled.startsWith(first.saturday) ? "Sat" : "Sun";
+        const day = t.dateScheduled.startsWith(latest.saturday) ? "Sat" : "Sun";
         return `<tr>
           <td>${day} ${formatTime(t.dateScheduled)}</td>
           <td>${firstSeen}</td>
@@ -291,31 +289,33 @@
     const satLabel = formatDate(first.saturday);
     const sunLabel = formatDate(first.sunday);
 
-    // All times ever seen = first fetch + any new times that appeared later
     const newTimes = comparison?.newTimes ?? [];
-    const newIds = new Set(newTimes.map((t) => t.teeTimeId));
-    const latestIds = new Set(latest.teeTimes.map((t) => t.teeTimeId));
+    const disappearedTimes = comparison?.disappearedTimes ?? [];
+    const baselineFetchedAt = comparison?.baselineFetchedAt ?? first.fetchedAt;
+    const latestFetchedAt   = comparison?.latestFetchedAt   ?? latest.fetchedAt;
 
+    // All times ever seen = latest still-available + disappeared (booked)
     const allSeen = [
-      ...first.teeTimes,
-      ...newTimes.filter((t) => !first.teeTimes.some((f) => f.teeTimeId === t.teeTimeId)),
+      ...latest.teeTimes,
+      ...disappearedTimes.filter((t) => !latest.teeTimes.some((l) => l.teeTimeId === t.teeTimeId)),
+      ...newTimes.filter((t) => !latest.teeTimes.some((l) => l.teeTimeId === t.teeTimeId) && !disappearedTimes.some((d) => d.teeTimeId === t.teeTimeId)),
     ];
 
     if (allSeen.length === 0) {
-      return `<div class="card"><h2>Weekend of ${satLabel}</h2><div class="empty">No tee times were ever available this weekend.</div></div>`;
+      return `<div class="section-label">Last Weekend — ${satLabel} &amp; ${sunLabel}</div>
+      <div class="card"><div class="empty">No tee times were available this weekend.</div></div>`;
     }
+
+    const disappearedIds = new Set(disappearedTimes.map((t) => t.teeTimeId));
 
     const rows = allSeen
       .sort((a, b) => a.dateScheduled.localeCompare(b.dateScheduled))
       .map((t) => {
-        const booked = !latestIds.has(t.teeTimeId);
-        const appearedLate = newIds.has(t.teeTimeId);
+        const booked = disappearedIds.has(t.teeTimeId);
         const day = t.dateScheduled.startsWith(first.saturday) ? "Sat" : "Sun";
-        const firstSeen = appearedLate
-          ? `~${new Date(comparison.comparedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}`
-          : new Date(first.fetchedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+        const firstSeen = formatDateTime(baselineFetchedAt);
         const statusHtml = booked
-          ? `<span class="pill pill-booked">Booked</span>`
+          ? `<span class="pill pill-booked">Booked by ${formatDateTime(latestFetchedAt)}</span>`
           : `<span class="pill pill-available">Available</span>`;
 
         return `<tr>
@@ -331,7 +331,7 @@
       <table>
         <thead>
           <tr>
-            <th>Tee Time</th><th>Price</th><th>First Available</th><th>Status</th>
+            <th>Tee Time</th><th>Price</th><th>First Seen</th><th>Status</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
