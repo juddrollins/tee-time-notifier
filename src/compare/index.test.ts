@@ -55,6 +55,31 @@ describe("compareResults", () => {
     expect(result.newTimes).toHaveLength(0);
   });
 
+  test("returns disappeared times that were in baseline but not latest", () => {
+    const baseline = makeFetchResult([
+      makeTeeTime(101, "2026-03-14T08:00:00"),
+      makeTeeTime(102, "2026-03-14T08:08:00"),
+    ]);
+    const latest = makeFetchResult([
+      makeTeeTime(101, "2026-03-14T08:00:00"),
+    ]);
+
+    const result = compareResults(baseline, latest, "baseline.json", "latest.json");
+
+    expect(result.disappearedTimes).toHaveLength(1);
+    expect(result.disappearedTimes[0].teeTimeId).toBe(102);
+  });
+
+  test("result includes baselineFetchedAt and latestFetchedAt", () => {
+    const baseline = makeFetchResult([makeTeeTime(101, "2026-03-14T08:00:00")]);
+    const latest = makeFetchResult([makeTeeTime(101, "2026-03-14T08:00:00")]);
+
+    const result = compareResults(baseline, latest, "baseline.json", "latest.json");
+
+    expect(result.baselineFetchedAt).toBe(baseline.fetchedAt);
+    expect(result.latestFetchedAt).toBe(latest.fetchedAt);
+  });
+
   test("result includes correct metadata", () => {
     const baseline = makeFetchResult([makeTeeTime(101, "2026-03-14T08:00:00")]);
     const latest = makeFetchResult([makeTeeTime(101, "2026-03-14T08:00:00")]);
