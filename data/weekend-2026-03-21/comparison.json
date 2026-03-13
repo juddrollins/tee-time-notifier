@@ -1,11 +1,11 @@
 {
-  "comparedAt": "2026-03-13T05:20:02.744Z",
+  "comparedAt": "2026-03-13T05:30:02.420Z",
   "saturday": "2026-03-21",
   "sunday": "2026-03-22",
   "baselineFile": "2026-03-13T04-00-01-078Z.json",
-  "latestFile": "2026-03-13T05-20-01-629Z.json",
+  "latestFile": "2026-03-13T05-30-01-352Z.json",
   "baselineFetchedAt": "2026-03-13T04:00:01.078Z",
-  "latestFetchedAt": "2026-03-13T05:20:01.629Z",
+  "latestFetchedAt": "2026-03-13T05:30:01.352Z",
   "newTimes": [],
   "disappearedTimes": []
 }
