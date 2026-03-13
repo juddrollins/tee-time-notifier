@@ -1,11 +1,11 @@
 {
-  "comparedAt": "2026-03-13T03:30:03.007Z",
+  "comparedAt": "2026-03-13T03:40:03.085Z",
   "saturday": "2026-03-14",
   "sunday": "2026-03-15",
   "baselineFile": "2026-03-10T01-43-31-006Z.json",
-  "latestFile": "2026-03-13T03-30-01-866Z.json",
+  "latestFile": "2026-03-13T03-40-01-561Z.json",
   "baselineFetchedAt": "2026-03-10T01:43:31.006Z",
-  "latestFetchedAt": "2026-03-13T03:30:01.866Z",
+  "latestFetchedAt": "2026-03-13T03:40:01.561Z",
   "newTimes": [
     {
       "golfCourseId": 16503,
