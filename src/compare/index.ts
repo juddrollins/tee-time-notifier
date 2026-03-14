@@ -2,14 +2,20 @@ import * as github from "../lib/github";
 import { getTargetWeekend } from "../lib/dates";
 import type { FetchResult, TeeTime } from "../lib/types";
 
+/** A tee time enriched with the timestamp it was first seen in any pull. */
+export type TrackedTeeTime = TeeTime & { firstSeenAt: string };
+
+/** A tracked tee time that has since disappeared, with a disappeared timestamp. */
+export type DisappearedTeeTime = TrackedTeeTime & { disappearedAt: string };
+
 export interface CompareResult {
   comparedAt: string;
   saturday: string;
   sunday: string;
-  availableTimes: TeeTime[];
-  newTimes: TeeTime[];
-  disappearedTimes: TeeTime[];
-  newThisRun: TeeTime[];
+  availableTimes: TrackedTeeTime[];
+  newTimes: TrackedTeeTime[];
+  disappearedTimes: DisappearedTeeTime[];
+  newThisRun: TrackedTeeTime[];
 }
 
 /**
@@ -19,21 +25,24 @@ export interface CompareResult {
  * pull as the baseline with nothing marked new.
  *
  * On subsequent runs, diffs the latest pull against the existing state:
- *   - Times in latest but not in availableTimes → added to availableTimes,
- *     newTimes, and newThisRun; removed from disappearedTimes if present.
- *   - Times in availableTimes but not in latest → removed from availableTimes
- *     and newTimes; added to disappearedTimes.
+ *   - Times in latest but not in availableTimes → stamped with firstSeenAt,
+ *     added to availableTimes, newTimes, and newThisRun; removed from
+ *     disappearedTimes if present.
+ *   - Times in availableTimes but not in latest → stamped with disappearedAt,
+ *     removed from availableTimes and newTimes, added to disappearedTimes.
  */
 export function compareResults(
   existing: CompareResult | null,
   latest: FetchResult
 ): CompareResult {
+  const now = new Date().toISOString();
+
   if (!existing) {
     return {
-      comparedAt: new Date().toISOString(),
+      comparedAt: now,
       saturday: latest.saturday,
       sunday: latest.sunday,
-      availableTimes: latest.teeTimes,
+      availableTimes: latest.teeTimes.map((t) => ({ ...t, firstSeenAt: now })),
       newTimes: [],
       disappearedTimes: [],
       newThisRun: [],
@@ -48,15 +57,16 @@ export function compareResults(
   let availableTimes = [...existing.availableTimes];
   let newTimes = [...existing.newTimes];
   let disappearedTimes = [...existing.disappearedTimes];
-  const newThisRun: TeeTime[] = [];
+  const newThisRun: TrackedTeeTime[] = [];
 
   // Times in the latest pull that aren't currently available → newly appeared
   for (const t of latest.teeTimes) {
     if (!availableIds.has(t.teeTimeId)) {
-      availableTimes.push(t);
-      newThisRun.push(t);
+      const tracked: TrackedTeeTime = { ...t, firstSeenAt: now };
+      availableTimes.push(tracked);
+      newThisRun.push(tracked);
       if (!newIds.has(t.teeTimeId)) {
-        newTimes.push(t);
+        newTimes.push(tracked);
       }
       if (disappearedIds.has(t.teeTimeId)) {
         disappearedTimes = disappearedTimes.filter((d) => d.teeTimeId !== t.teeTimeId);
@@ -70,13 +80,13 @@ export function compareResults(
       availableTimes = availableTimes.filter((a) => a.teeTimeId !== t.teeTimeId);
       newTimes = newTimes.filter((n) => n.teeTimeId !== t.teeTimeId);
       if (!disappearedIds.has(t.teeTimeId)) {
-        disappearedTimes.push(t);
+        disappearedTimes.push({ ...t, disappearedAt: now });
       }
     }
   }
 
   return {
-    comparedAt: new Date().toISOString(),
+    comparedAt: now,
     saturday: latest.saturday,
     sunday: latest.sunday,
     availableTimes,
