@@ -130,6 +130,20 @@
       color: #9ca3af;
       text-align: right;
     }
+
+    .btn-book {
+      background: #22c55e;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-book:hover { background: #16a34a; }
   </style>
 </head>
 <body>
@@ -214,6 +228,16 @@
     return `${Math.floor(diff / 3600)}h ago`;
   }
 
+  function openBooking(teeTimeId) {
+    const win = window.open('https://fox.tenfore.golf/fallsroad');
+    const bookingUrl = `https://fox.tenfore.golf/auth/login?returnTo=/tee-time/${teeTimeId}%3Fplayers=1%26backToSearch=true`;
+    let attempts = 0;
+    const interval = setInterval(() => {
+      win.location.href = bookingUrl;
+      if (++attempts >= 8) clearInterval(interval);
+    }, 250);
+  }
+
   function renderDay(label, times, newIds) {
     if (times.length === 0) {
       return `<div class="card"><h2>${label}</h2><div class="empty">No tee times available.</div></div>`;
@@ -226,6 +250,7 @@
         <td>${t.teeFeeTitle}</td>
         <td>${t.maxPlayers} players</td>
         <td>$${t.priceBeforeTax}</td>
+        <td><button class="btn-book" onclick="openBooking(${t.teeTimeId})">Book</button></td>
       </tr>`;
     }).join("");
 
@@ -234,7 +259,7 @@
       <table>
         <thead>
           <tr>
-            <th>Time</th><th>Rate</th><th>Players</th><th>Price</th>
+            <th>Time</th><th>Rate</th><th>Players</th><th>Price</th><th></th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
