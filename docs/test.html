@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Booking Test — Tee Time Notifier</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f3f4f6;
+      color: #111;
+      padding: 24px 16px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      max-width: 480px;
+      margin: 0 auto;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .note {
+      font-size: 0.8rem;
+      color: #6b7280;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #374151;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #22c55e;
+      color: white;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover { background: #16a34a; }
+    button:disabled { background: #9ca3af; cursor: default; }
+
+    #status {
+      margin-top: 14px;
+      font-size: 0.82rem;
+      color: #6b7280;
+      min-height: 1.2em;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>Booking Redirect Test</h1>
+  <p class="note">Opens the course page to prime the SPA, then redirects to the booking URL after a short delay.</p>
+
+  <label for="teeTimeId">Tee Time ID</label>
+  <input id="teeTimeId" type="text" value="5205829" />
+
+  <label for="delay">Redirect delay (ms)</label>
+  <input id="delay" type="number" value="3000" min="500" step="500" />
+
+  <button id="btn" onclick="handleClick()">Open Booking Page</button>
+  <div id="status"></div>
+</div>
+
+<script>
+  function handleClick() {
+    const teeTimeId = document.getElementById('teeTimeId').value.trim();
+    const delay = parseInt(document.getElementById('delay').value, 10) || 3000;
+
+    if (!teeTimeId) {
+      document.getElementById('status').textContent = 'Enter a tee time ID.';
+      return;
+    }
+
+    const btn = document.getElementById('btn');
+    const status = document.getElementById('status');
+
+    const courseUrl = 'https://fox.tenfore.golf/fallsroad';
+    const bookingUrl = `https://fox.tenfore.golf/auth/login?returnTo=/tee-time/${teeTimeId}%3Fplayers=1%26backToSearch=true`;
+
+    const win = window.open(courseUrl);
+
+    if (!win) {
+      status.textContent = 'Popup was blocked. Allow popups for this page and try again.';
+      return;
+    }
+
+    btn.disabled = true;
+    let remaining = Math.round(delay / 1000);
+    status.textContent = `Course page opened. Redirecting to booking in ${remaining}s…`;
+
+    const interval = setInterval(() => {
+      remaining--;
+      if (remaining > 0) {
+        status.textContent = `Course page opened. Redirecting to booking in ${remaining}s…`;
+      }
+    }, 1000);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      win.location.href = bookingUrl;
+      status.textContent = 'Redirected. Check the opened tab.';
+      btn.disabled = false;
+    }, delay);
+  }
+</script>
+
+</body>
+</html>
