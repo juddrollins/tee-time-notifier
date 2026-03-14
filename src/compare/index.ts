@@ -52,16 +52,28 @@ async function main() {
     return;
   }
 
-  const baselineFile = files[0];
   const latestFile = files[files.length - 1];
-
-  const [baselineRaw, latestRaw] = await Promise.all([
-    github.readFile(`${weekDir}/${baselineFile}`),
-    github.readFile(`${weekDir}/${latestFile}`),
-  ]);
-
-  const baseline: FetchResult = JSON.parse(baselineRaw!);
+  const latestRaw = await github.readFile(`${weekDir}/${latestFile}`);
   const latest: FetchResult = JSON.parse(latestRaw!);
+
+  // Skip empty pulls when selecting the baseline — an empty first pull would
+  // make every time in the latest pull appear new (closes #3)
+  let baselineFile: string | null = null;
+  let baseline: FetchResult | null = null;
+  for (const file of files.slice(0, files.length - 1)) {
+    const raw = await github.readFile(`${weekDir}/${file}`);
+    const parsed: FetchResult = JSON.parse(raw!);
+    if (parsed.teeTimes.length > 0) {
+      baselineFile = file;
+      baseline = parsed;
+      break;
+    }
+  }
+
+  if (!baselineFile || !baseline) {
+    console.log("No non-empty baseline found — skipping comparison");
+    return;
+  }
 
   const result = compareResults(baseline, latest, baselineFile, latestFile);
 
