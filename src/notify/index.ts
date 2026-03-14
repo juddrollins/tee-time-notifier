@@ -29,14 +29,14 @@ function buildEmailBody(result: CompareResult): { subject: string; html: string 
   const sun = formatDate(result.sunday);
   const subject = `New tee times available — ${sat} & ${sun}`;
 
-  const satTimes = result.newTimes.filter((t) =>
+  const satTimes = result.newThisRun.filter((t) =>
     t.dateScheduled.startsWith(result.saturday)
   );
-  const sunTimes = result.newTimes.filter((t) =>
+  const sunTimes = result.newThisRun.filter((t) =>
     t.dateScheduled.startsWith(result.sunday)
   );
 
-  const renderDay = (label: string, times: CompareResult["newTimes"]) => {
+  const renderDay = (label: string, times: CompareResult["newThisRun"]) => {
     if (times.length === 0) return "";
     const rows = times
       .map(
@@ -67,7 +67,7 @@ function buildEmailBody(result: CompareResult): { subject: string; html: string 
   const html = `
     <div style="font-family:sans-serif;max-width:600px">
       <h2>New Tee Times Available</h2>
-      <p>${result.newTimes.length} new time(s) opened up for the weekend of ${sat}.</p>
+      <p>${result.newThisRun.length} new time(s) opened up for the weekend of ${sat}.</p>
       ${renderDay(sat, satTimes)}
       ${renderDay(sun, sunTimes)}
       <p style="margin-top:32px;color:#6b7280;font-size:12px">
@@ -90,8 +90,8 @@ async function main() {
 
   const result: CompareResult = JSON.parse(raw);
 
-  if (result.newTimes.length === 0) {
-    console.log("No new tee times — skipping notification");
+  if (result.newThisRun.length === 0) {
+    console.log("No new tee times this run — skipping notification");
     return;
   }
 
