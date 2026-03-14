@@ -153,13 +153,13 @@ Tests cover the compare logic and target weekend date calculation. All tests use
 4. PRs are squash-merged — keep the PR title clear, it becomes the commit message
 5. The self-hosted runner on the Pi will automatically pull and rebuild after merge
 
-### Running tests before pushing
+### Running Tests Before Pushing
 
 ```bash
 npm test
 ```
 
-### PR guidelines
+### PR Guidelines
 
 - One logical change per PR
 - Reference the relevant GitHub issue in the PR description (e.g. `closes #3`)
