@@ -231,11 +231,7 @@
   function openBooking(teeTimeId) {
     const win = window.open('https://fox.tenfore.golf/fallsroad');
     const bookingUrl = `https://fox.tenfore.golf/auth/login?returnTo=/tee-time/${teeTimeId}%3Fplayers=1%26backToSearch=true`;
-    let attempts = 0;
-    const interval = setInterval(() => {
-      win.location.href = bookingUrl;
-      if (++attempts >= 8) clearInterval(interval);
-    }, 250);
+    setTimeout(() => { win.location.href = bookingUrl; }, 1500);
   }
 
   function renderDay(label, times, newIds) {
