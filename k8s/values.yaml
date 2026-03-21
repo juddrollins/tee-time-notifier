@@ -1,0 +1,19 @@
+image:
+  repository: ghcr.io/juddrollins/tee-time-notifier
+  tag: latest
+  pullPolicy: Always
+
+schedule: "*/10 * * * *"
+timezone: "America/New_York"
+
+namespace: argo
+
+storage: 500Mi
+
+course:
+  id: "16503"
+  players: "4"
+  holes: "18"
+
+secrets:
+  name: tee-time-secrets

@@ -4,9 +4,17 @@ on:
   push:
     branches: [main]
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   deploy:
     runs-on: self-hosted
+    permissions:
+      contents: read
+      packages: write
+
     steps:
       - name: Pull latest changes
         run: git -C ~/tee-time-notifier pull origin main
@@ -16,6 +24,14 @@ jobs:
 
       - name: Build
         run: npm --prefix ~/tee-time-notifier run build
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build and push Docker image
+        run: |
+          docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest ~/tee-time-notifier
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
       - name: Confirm
         run: echo "Deploy complete at $(date)"
