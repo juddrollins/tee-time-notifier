@@ -1,9 +1,49 @@
 {
-  "comparedAt": "2026-03-25T11:20:02.939Z",
+  "comparedAt": "2026-03-25T11:40:02.708Z",
   "saturday": "2026-03-28",
   "sunday": "2026-03-29",
-  "availableTimes": [],
-  "newTimes": [],
+  "availableTimes": [
+    {
+      "golfCourseId": 16503,
+      "golfCourseName": "Falls Road Golf Course",
+      "golfCourseLogoUrl": "https://firebasestorage.googleapis.com/v0/b/tenfore-buck.appspot.com/o/golf-course-images%2F16503-KJHWF1.png?alt=media&token=3499e960-9089-4a2c-9735-a6a47fb7bc05",
+      "golfCourseVanityName": "fallsroad",
+      "subCourseId": null,
+      "subCourseName": null,
+      "subCourseAlias": "Falls Road",
+      "teeTimeId": 5206142,
+      "teeTimeTitle": null,
+      "dateScheduled": "2026-03-28T08:56:00-04:00",
+      "teeFeeId": 2404,
+      "teeFeeTitle": "Public",
+      "priceBeforeTax": 69,
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bookedPlayers": 0,
+      "firstSeenAt": "2026-03-25T11:40:02.708Z"
+    }
+  ],
+  "newTimes": [
+    {
+      "golfCourseId": 16503,
+      "golfCourseName": "Falls Road Golf Course",
+      "golfCourseLogoUrl": "https://firebasestorage.googleapis.com/v0/b/tenfore-buck.appspot.com/o/golf-course-images%2F16503-KJHWF1.png?alt=media&token=3499e960-9089-4a2c-9735-a6a47fb7bc05",
+      "golfCourseVanityName": "fallsroad",
+      "subCourseId": null,
+      "subCourseName": null,
+      "subCourseAlias": "Falls Road",
+      "teeTimeId": 5206142,
+      "teeTimeTitle": null,
+      "dateScheduled": "2026-03-28T08:56:00-04:00",
+      "teeFeeId": 2404,
+      "teeFeeTitle": "Public",
+      "priceBeforeTax": 69,
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bookedPlayers": 0,
+      "firstSeenAt": "2026-03-25T11:40:02.708Z"
+    }
+  ],
   "disappearedTimes": [
     {
       "golfCourseId": 16503,
@@ -76,26 +116,6 @@
       "teeTimeId": 5206141,
       "teeTimeTitle": null,
       "dateScheduled": "2026-03-28T08:45:00-04:00",
-      "teeFeeId": 2404,
-      "teeFeeTitle": "Public",
-      "priceBeforeTax": 69,
-      "minPlayers": 1,
-      "maxPlayers": 4,
-      "bookedPlayers": 0,
-      "firstSeenAt": "2026-03-21T01:00:02.904Z",
-      "disappearedAt": "2026-03-21T01:10:02.717Z"
-    },
-    {
-      "golfCourseId": 16503,
-      "golfCourseName": "Falls Road Golf Course",
-      "golfCourseLogoUrl": "https://firebasestorage.googleapis.com/v0/b/tenfore-buck.appspot.com/o/golf-course-images%2F16503-KJHWF1.png?alt=media&token=3499e960-9089-4a2c-9735-a6a47fb7bc05",
-      "golfCourseVanityName": "fallsroad",
-      "subCourseId": null,
-      "subCourseName": null,
-      "subCourseAlias": "Falls Road",
-      "teeTimeId": 5206142,
-      "teeTimeTitle": null,
-      "dateScheduled": "2026-03-28T08:56:00-04:00",
       "teeFeeId": 2404,
       "teeFeeTitle": "Public",
       "priceBeforeTax": 69,
@@ -766,5 +786,25 @@
       "disappearedAt": "2026-03-22T01:30:02.585Z"
     }
   ],
-  "newThisRun": []
+  "newThisRun": [
+    {
+      "golfCourseId": 16503,
+      "golfCourseName": "Falls Road Golf Course",
+      "golfCourseLogoUrl": "https://firebasestorage.googleapis.com/v0/b/tenfore-buck.appspot.com/o/golf-course-images%2F16503-KJHWF1.png?alt=media&token=3499e960-9089-4a2c-9735-a6a47fb7bc05",
+      "golfCourseVanityName": "fallsroad",
+      "subCourseId": null,
+      "subCourseName": null,
+      "subCourseAlias": "Falls Road",
+      "teeTimeId": 5206142,
+      "teeTimeTitle": null,
+      "dateScheduled": "2026-03-28T08:56:00-04:00",
+      "teeFeeId": 2404,
+      "teeFeeTitle": "Public",
+      "priceBeforeTax": 69,
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bookedPlayers": 0,
+      "firstSeenAt": "2026-03-25T11:40:02.708Z"
+    }
+  ]
 }
