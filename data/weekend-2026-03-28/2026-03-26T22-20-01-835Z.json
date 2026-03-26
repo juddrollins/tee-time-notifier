@@ -1,0 +1,61 @@
+{
+  "fetchedAt": "2026-03-26T22:20:01.835Z",
+  "saturday": "2026-03-28",
+  "sunday": "2026-03-29",
+  "teeTimes": [
+    {
+      "golfCourseId": 16503,
+      "golfCourseName": "Falls Road Golf Course",
+      "golfCourseLogoUrl": "https://firebasestorage.googleapis.com/v0/b/tenfore-buck.appspot.com/o/golf-course-images%2F16503-KJHWF1.png?alt=media&token=3499e960-9089-4a2c-9735-a6a47fb7bc05",
+      "golfCourseVanityName": "fallsroad",
+      "subCourseId": null,
+      "subCourseName": null,
+      "subCourseAlias": "Falls Road",
+      "teeTimeId": 5206145,
+      "teeTimeTitle": null,
+      "dateScheduled": "2026-03-28T09:29:00-04:00",
+      "teeFeeId": 2404,
+      "teeFeeTitle": "Public",
+      "priceBeforeTax": 71,
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bookedPlayers": 0
+    },
+    {
+      "golfCourseId": 16503,
+      "golfCourseName": "Falls Road Golf Course",
+      "golfCourseLogoUrl": "https://firebasestorage.googleapis.com/v0/b/tenfore-buck.appspot.com/o/golf-course-images%2F16503-KJHWF1.png?alt=media&token=3499e960-9089-4a2c-9735-a6a47fb7bc05",
+      "golfCourseVanityName": "fallsroad",
+      "subCourseId": null,
+      "subCourseName": null,
+      "subCourseAlias": "Falls Road",
+      "teeTimeId": 5206150,
+      "teeTimeTitle": null,
+      "dateScheduled": "2026-03-28T10:24:00-04:00",
+      "teeFeeId": 2404,
+      "teeFeeTitle": "Public",
+      "priceBeforeTax": 72,
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bookedPlayers": 0
+    },
+    {
+      "golfCourseId": 16503,
+      "golfCourseName": "Falls Road Golf Course",
+      "golfCourseLogoUrl": "https://firebasestorage.googleapis.com/v0/b/tenfore-buck.appspot.com/o/golf-course-images%2F16503-KJHWF1.png?alt=media&token=3499e960-9089-4a2c-9735-a6a47fb7bc05",
+      "golfCourseVanityName": "fallsroad",
+      "subCourseId": null,
+      "subCourseName": null,
+      "subCourseAlias": "Falls Road",
+      "teeTimeId": 5206151,
+      "teeTimeTitle": null,
+      "dateScheduled": "2026-03-28T10:35:00-04:00",
+      "teeFeeId": 2404,
+      "teeFeeTitle": "Public",
+      "priceBeforeTax": 72,
+      "minPlayers": 1,
+      "maxPlayers": 4,
+      "bookedPlayers": 0
+    }
+  ]
+}
